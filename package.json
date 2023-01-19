@@ -21,6 +21,7 @@
     "@types/react-dom": "^18.0.9",
     "@types/react-redux": "^7.1.24",
     "axios": "^1.2.1",
+    "js-cookie": "^3.0.1",
     "jwt-decode": "^3.1.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -72,6 +73,7 @@
   },
   "devDependencies": {
     "@types/glidejs__glide": "^3.4.2",
+    "@types/js-cookie": "^3.0.2",
     "@types/react-helmet": "^6.1.6",
     "autoprefixer": "^10.4.13",
     "http-server": "^14.1.1",

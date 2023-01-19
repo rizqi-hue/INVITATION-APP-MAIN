@@ -1,4 +1,5 @@
 // import jwt_decode from "jwt-decode";
+import Cookies from 'js-cookie';
 
 export const storeData = (storageKey: string, value: string) => {
   try {
@@ -17,6 +18,23 @@ export const getData = (storageKey: string) => {
     console.log("gagal mengambil data");
   }
 };
+
+export const getCookie = (key: string) => {
+  try {
+    return Cookies.get(key)
+  } catch (e) {
+    console.log("gagal mengambil data");
+  }
+};
+
+export const removeCookie = (key: string) => {
+  try {
+    return Cookies.remove(key)
+  } catch (e) {
+    console.log("gagal mengambil data");
+  }
+};
+
 
 export const clearAppData = function () {
   try {

@@ -2,7 +2,7 @@ import { useAppDispatch } from "app/hooks";
 import { setAuth } from "modules/Auth/services/AuthSlice";
 import React, { useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { getData } from "utils/storage";
+import { getCookie } from "utils/storage";
 
 interface AuthContextType {
   user: any;
@@ -12,10 +12,10 @@ let AuthContext = React.createContext<AuthContextType>(null!);
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const dispatch = useAppDispatch();
-  let [user] = React.useState<any>(getData("token"));
+  let [user] = React.useState<any>(getCookie("token"));
 
   useEffect(() => {
-    let token = getData("token");
+    let token = getCookie("token");
     if (token) {
       dispatch(setAuth(true));
     } else {
@@ -24,7 +24,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [dispatch]);
 
   let value = { user };
-
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
@@ -36,7 +35,6 @@ function RequireAuth({ children }: { children: JSX.Element }) {
   let auth = useAuth();
   let location = useLocation();
 
-  console.log(auth);
   if (!auth.user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
@@ -44,4 +42,20 @@ function RequireAuth({ children }: { children: JSX.Element }) {
   return children;
 }
 
-export { AuthProvider, RequireAuth };
+function RedirectToProfile({ children }: { children: JSX.Element }) {
+  let auth = useAuth();
+  let location = useLocation();
+
+  console.log(location.pathname)
+
+  if (auth.user) {
+    if (location.pathname === '/login') {
+      return <Navigate to="/profile" state={{ from: location }} replace />;
+    }
+  }
+
+  return children;
+}
+
+
+export { AuthProvider, RequireAuth, RedirectToProfile };

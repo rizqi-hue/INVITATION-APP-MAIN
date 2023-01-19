@@ -1,6 +1,10 @@
 import { AtSymbolIcon, KeyIcon, UserIcon } from "@heroicons/react/24/outline";
+import { XCircleIcon } from "@heroicons/react/24/solid";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useAppDispatch, useAppSelector } from "app/hooks";
 import { FC, useEffect } from "react";
-import { Helmet } from "react-helmet";
+import { useForm } from "react-hook-form";
+import * as Yup from "yup";
 import {
   ButtonPrimary,
   FloatInput,
@@ -9,12 +13,7 @@ import {
   svg_google,
   svg_twitter,
 } from "../../../components";
-import { useAppDispatch, useAppSelector } from "app/hooks";
-import * as Yup from "yup";
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
 import { clearState, signUp } from "../services/AuthSlice";
-import { XCircleIcon } from "@heroicons/react/24/solid";
 
 export interface PageRegisterProps {
   className?: string;
@@ -47,9 +46,8 @@ const registerSocials = [
 
 const Register: FC<PageRegisterProps> = ({ className = "" }) => {
   const dispatch = useAppDispatch();
-  const { isSuccess, isError, isFetching, errorMessage } = useAppSelector(
-    (state) => state.auth
-  );
+  const { isSuccess, isAuth, isError, isFetching, errorMessage } =
+    useAppSelector((state) => state.auth);
 
   const validationSchema = Yup.object().shape({
     name: Yup.string().required("Name is required"),
@@ -74,7 +72,7 @@ const Register: FC<PageRegisterProps> = ({ className = "" }) => {
   });
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess || isAuth) {
       dispatch(clearState({}));
       // redirect
     }
@@ -97,9 +95,6 @@ const Register: FC<PageRegisterProps> = ({ className = "" }) => {
 
   return (
     <div className={`nc-PageLogin ${className}`} data-nc-id="PageLogin">
-      <Helmet>
-        <title>Register || Mari bergabung bersama kamu</title>
-      </Helmet>
       <div className="container mb-24 lg:mb-32 flex mt-10">
         <div
           className="hidden lg:flex w-full lg:w-1/2 login_img_section

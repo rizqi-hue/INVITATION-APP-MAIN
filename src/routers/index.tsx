@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Layout from "../modules/Layout";
 import { AuthProvider, RequireAuth } from "./AuthProvider";
 import { Home, Login, Register } from "../modules";
+import { Profile } from "modules/User";
 
 const Routers = () => {
   return (
@@ -21,6 +22,16 @@ const Routers = () => {
               </RequireAuth>
             }
           />
+          <Route element={<Layout />}>
+            <Route
+              path="/profile"
+              element={
+                // <RequireAuth>
+                  <Profile />
+                // </RequireAuth>
+              }
+            />
+          </Route>
         </Routes>
       </BrowserRouter>
     </AuthProvider>

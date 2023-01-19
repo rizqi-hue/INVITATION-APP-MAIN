@@ -1,10 +1,14 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import api from "app/api";
-import { storeData } from "utils/storage";
+import { removeCookie } from "utils/storage";
 
 export interface AuthInterface {
   email: string;
   password: string;
+}
+
+export interface RefreshTokenInterface {
+  token: string;
 }
 
 export interface RegisterInterface {
@@ -13,10 +17,16 @@ export interface RegisterInterface {
   password: string;
 }
 
-export const signIn = createAsyncThunk(
-  "signIn",
-  async (data: AuthInterface, thunkAPI) => {
-    return api.post("auth/sign-in", data).then(
+export const signUp = createAsyncThunk(
+  "signUp",
+  async (data: RegisterInterface, thunkAPI) => {
+    const config = {
+      method: "post",
+      url: "auth/sign-up",
+      data,
+    };
+
+    return api(config).then(
       (res: any) => {
         return res.data;
       },
@@ -27,10 +37,57 @@ export const signIn = createAsyncThunk(
   }
 );
 
-export const signUp = createAsyncThunk(
-  "signUp",
-  async (data: RegisterInterface, thunkAPI) => {
-    return api.post("auth/sign-up", data).then(
+export const signIn = createAsyncThunk(
+  "signIn",
+  async (data: AuthInterface, thunkAPI) => {
+    const config = {
+      method: "post",
+      url: "auth/sign-in",
+      data,
+      withCredentials: true,
+    };
+
+    return api(config).then(
+      (res: any) => {
+        return res.data;
+      },
+      (err: any) => {
+        return thunkAPI.rejectWithValue(err.response.data.message);
+      }
+    );
+  }
+);
+
+export const signOut = createAsyncThunk(
+  "signOut",
+  async (data: any, thunkAPI) => {
+    const config = {
+      method: "post",
+      url: "auth/sign-out",
+      withCredentials: true,
+    };
+
+    return api(config).then(
+      (res: any) => {
+        return res.data;
+      },
+      (err: any) => {
+        return thunkAPI.rejectWithValue(err.response.data.message);
+      }
+    );
+  }
+);
+
+export const refreshToken = createAsyncThunk(
+  "refreshToken",
+  async (data: RefreshTokenInterface, thunkAPI) => {
+    const config = {
+      method: "post",
+      url: "auth/refresh-token",
+      data,
+    };
+
+    return api(config).then(
       (res: any) => {
         return res.data;
       },
@@ -47,6 +104,7 @@ const AuthSlice = createSlice({
     data: { email: "", password: "" } as AuthInterface,
     isFetching: false,
     isSuccess: false,
+    isSignOutSuccess: false,
     isError: false,
     isAuth: false,
     errorMessage: "" as string,
@@ -56,6 +114,8 @@ const AuthSlice = createSlice({
       state.isFetching = false;
       state.isSuccess = false;
       state.isError = false;
+      state.isSignOutSuccess = false;
+      state.errorMessage = "";
     },
     setAuth: (state, action) => {
       state.isAuth = action.payload;
@@ -64,7 +124,6 @@ const AuthSlice = createSlice({
   extraReducers: (builder) => {
     // signIn
     builder.addCase(signIn.fulfilled, (state, { payload }) => {
-      storeData("token", payload.data.token);
       state.isFetching = false;
       state.isSuccess = true;
       state.isAuth = true;
@@ -93,6 +152,40 @@ const AuthSlice = createSlice({
       state.errorMessage = payload.payload;
     });
     builder.addCase(signUp.pending, (state, action) => {
+      state.isFetching = true;
+    });
+
+    // refreshToken
+    builder.addCase(refreshToken.fulfilled, (state, { payload }) => {
+      state.isFetching = false;
+      state.isSuccess = true;
+      state.isAuth = true;
+      return state;
+    });
+    builder.addCase(refreshToken.rejected, (state, payload: any) => {
+      state.isFetching = false;
+      state.isError = true;
+      state.isAuth = false;
+      state.errorMessage = payload.payload;
+    });
+    builder.addCase(refreshToken.pending, (state, action) => {
+      state.isFetching = true;
+    });
+
+    // signout
+    builder.addCase(signOut.fulfilled, (state, { payload }) => {
+      removeCookie("token");
+      state.isFetching = false;
+      state.isSignOutSuccess = true;
+      state.isAuth = false;
+      return state;
+    });
+    builder.addCase(signOut.rejected, (state, payload: any) => {
+      state.isFetching = false;
+      state.isError = true;
+      state.errorMessage = payload.payload;
+    });
+    builder.addCase(signOut.pending, (state, action) => {
       state.isFetching = true;
     });
   },

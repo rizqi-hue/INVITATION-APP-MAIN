@@ -1,6 +1,11 @@
 import { AtSymbolIcon, KeyIcon } from "@heroicons/react/24/outline";
+import { XCircleIcon } from "@heroicons/react/24/solid";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useAppDispatch, useAppSelector } from "app/hooks";
 import { FC, useEffect } from "react";
-import { Helmet } from "react-helmet";
+import { useForm } from "react-hook-form";
+import { Link, useNavigate } from "react-router-dom";
+import * as Yup from "yup";
 import {
   ButtonPrimary,
   FloatInput,
@@ -9,13 +14,7 @@ import {
   svg_google,
   svg_twitter,
 } from "../../../components";
-import { Link } from "react-router-dom";
-import * as Yup from "yup";
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { signIn } from "../services/AuthSlice";
-import { useAppDispatch, useAppSelector } from "app/hooks";
-import { XCircleIcon } from "@heroicons/react/24/solid";
+import { clearState, signIn } from "../services/AuthSlice";
 
 export interface PageLoginProps {
   className?: string;
@@ -45,8 +44,10 @@ const loginSocials = [
 ];
 
 const Login: FC<PageLoginProps> = ({ className = "" }) => {
+  let navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const {isSuccess, isError, isFetching, errorMessage} = useAppSelector(state => state.auth)
+  const { isSuccess, isError, isFetching, errorMessage } =
+    useAppSelector((state) => state.auth);
 
   const validationSchema = Yup.object().shape({
     username: Yup.string().required("Email is required"),
@@ -65,16 +66,14 @@ const Login: FC<PageLoginProps> = ({ className = "" }) => {
     resolver: yupResolver(validationSchema),
   });
 
-
   useEffect(() => {
+    console.log(isSuccess)
     if (isSuccess) {
-      // redirect
+      dispatch(clearState({}));
+      return navigate("/profile");
     }
-
-    if (isError) {
-      console.log(errorMessage)
-    }
-  }, [isSuccess, isError])
+    
+  }, [isSuccess, dispatch, navigate]);
 
   const doLogin = (data: LoginForm) => {
     dispatch(
@@ -87,9 +86,6 @@ const Login: FC<PageLoginProps> = ({ className = "" }) => {
 
   return (
     <div className={`nc-PageLogin ${className}`} data-nc-id="PageLogin">
-      <Helmet>
-        <title>Login || Yu masuk</title>
-      </Helmet>
       <div className="container mb-24 lg:mb-32 flex mt-10">
         <div
           className="hidden lg:flex w-full lg:w-1/2 login_img_section
@@ -133,22 +129,32 @@ const Login: FC<PageLoginProps> = ({ className = "" }) => {
                 isError={errors.password}
                 errorMessage={errors.password?.message}
               />
-              {
-                isError && (
-                  <>
-                    <div className="mb-2"></div>
-                    <div className="p-1 text-xs rounded-full bg-red-300 items-center text-gray-800 leading-none lg:rounded-full flex lg:inline-flex" role="alert">
-                      <span className="flex mr-3">
-                        <XCircleIcon className="w-5 text-red-500" />
-                      </span>
-                      <span className="font-semibold mr-2 text-left flex-auto">{errorMessage}</span>
-                      <svg className="fill-current opacity-75 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M12.95 10.707l.707-.707L8 4.343 6.586 5.757 10.828 10l-4.242 4.243L8 15.657l4.95-4.95z"/></svg>
-                    </div>
-                  </>
-                )
-              }
+              {isError && (
+                <>
+                  <div className="mb-2"></div>
+                  <div
+                    className="p-1 text-xs rounded-full bg-red-300 items-center text-gray-800 leading-none lg:rounded-full flex lg:inline-flex"
+                    role="alert">
+                    <span className="flex mr-3">
+                      <XCircleIcon className="w-5 text-red-500" />
+                    </span>
+                    <span className="font-semibold mr-2 text-left flex-auto">
+                      {errorMessage}
+                    </span>
+                    <svg
+                      className="fill-current opacity-75 h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20">
+                      <path d="M12.95 10.707l.707-.707L8 4.343 6.586 5.757 10.828 10l-4.242 4.243L8 15.657l4.95-4.95z" />
+                    </svg>
+                  </div>
+                </>
+              )}
               <div className="mb-6"></div>
-              <ButtonPrimary loading={isFetching} className="w-full" type="submit">
+              <ButtonPrimary
+                loading={isFetching}
+                className="w-full"
+                type="submit">
                 Continue
               </ButtonPrimary>
               <div className="flex justify-between mt-4 mb-1">
